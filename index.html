@@ -1,0 +1,175 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>my Game</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.1.1/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        },
+        physics:{
+        	default:'arcade',
+        	arcade:{
+        		gravity:{y:300},
+        		debug: false
+        	}
+        }
+    };
+
+    var game = new Phaser.Game(config);
+
+    function preload (){
+    	this.load.image('sky', 'assets/sky.png');
+	    this.load.image('ground', 'assets/platform.png');
+	    this.load.image('star', 'assets/star.png');
+	    this.load.image('bomb', 'assets/bomb.png');
+	    this.load.spritesheet('dude', 'assets/dude.png',{ 
+	    	    frameWidth: 32, frameHeight: 48 
+	        }
+	    );
+    }
+
+    function create (){
+        this.add.image(400, 300, 'sky'); // 添加天空
+        this.add.image(400,300,'star');  
+        // 初始化场景
+        platforms = this.physics.add.staticGroup();  
+	    platforms.create(400, 568, 'ground').setScale(2).refreshBody(); 
+	    platforms.create(600, 400, 'ground');
+	    platforms.create(50, 250, 'ground');
+	    platforms.create(750, 220, 'ground');
+	    // 初始化玩家
+	    player = this.physics.add.sprite(100,450,'dude') 
+	    // 玩家触底反弹
+	    player.setBounce(0.2); 
+	    player.setCollideWorldBounds(true); 
+	    // 玩家与场景接触
+	    this.physics.add.collider(player, platforms); 
+	    // 人物左方向四张正向一张右向四张
+	    this.anims.create({
+		    key: 'left',
+		    frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+		    frameRate: 10,
+		    repeat: -1
+		});
+		
+		this.anims.create({
+		    key: 'turn',
+		    frames: [ { key: 'dude', frame: 4 } ],
+		    frameRate: 20
+		});
+		
+		this.anims.create({
+		    key: 'right',
+		    frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+		    frameRate: 10,
+		    repeat: -1
+		});
+		 // 调用内置键盘管理器
+		cursors = this.input.keyboard.createCursorKeys();
+		
+		// 创建星尘
+		stars = this.physics.add.group({
+		    key: 'star',
+		    repeat: 11,
+		    setXY: { x: 12, y: 0, stepX: 70 }
+		});
+		// 星晨随机反弹
+		stars.children.iterate(function (child) {
+		    child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+		})
+		// 检测星星与墙体的碰撞
+		this.physics.add.collider(stars, platforms);
+		// 检测星尘与玩家是否重叠，如果重叠调用collectstar函数
+		this.physics.add.overlap(player, stars, collectStar, null, this);
+		// 让悉星尘消失，并增加分数
+		function collectStar (player, star){
+		   star.disableBody(true, true);
+
+		    score += 10;
+		    scoreText.setText('Score: ' + score);
+		
+		    if (stars.countActive(true) === 0)
+		    {
+		        stars.children.iterate(function (child) {
+		
+		            child.enableBody(true, child.x, 0, true, true);
+		
+		        });
+		
+		        var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+		
+		        var bomb = bombs.create(x, 16, 'bomb');
+		        bomb.setBounce(1);
+		        bomb.setCollideWorldBounds(true);
+		        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+		        bomb.allowGravity = false;
+		
+		    }
+		}
+		// 创建分数
+		var score = 0
+		scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    	
+    	// 创建炸弹
+    	bombs = this.physics.add.group();
+    	// 炸弹与场景接触
+    	this.physics.add.collider(bombs, platforms);
+    	this.physics.add.collider(player, bombs, hitBomb, null, this);
+    	// 炸弹与玩家接触
+    	function hitBomb (player, bomb){
+		    this.physics.pause();  // 停止游戏
+		
+		    player.setTint(0xff0000);
+		
+		    player.anims.play('turn');
+		
+		    gameOver = true;
+		}
+    	
+    
+    }
+
+    function update (){
+    	// 键盘敲击左右及其他方向键
+		if (cursors.left.isDown){
+		    player.setVelocityX(-160);
+		
+		    player.anims.play('left', true);
+		}
+		else if (cursors.right.isDown){
+		    player.setVelocityX(160);
+		
+		    player.anims.play('right', true);
+		}
+		else{
+		    player.setVelocityX(0);
+		
+		    player.anims.play('turn');
+		}
+		// 向上跳
+		if (cursors.up.isDown && player.body.touching.down){
+		    player.setVelocityY(-330);
+		}
+    }
+
+</script>
+
+</body>
+</html>
