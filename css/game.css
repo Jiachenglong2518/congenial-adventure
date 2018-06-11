@@ -6,7 +6,9 @@
 ul li{
     list-style: none;
 }
-
+.container{
+    background: gray;
+}
 .mainContainer{
     width: 400px;
     margin: 100px auto;
@@ -14,10 +16,10 @@ ul li{
 .imgBox{
     width: 400px;
     overflow: hidden; 
-    transform:rotatez(25deg);
+    /* transform:rotatez(25deg); */
 }
 .imgBox:hover{
-   cursor:url(img/3.png),auto;
+   cursor:url(../img/3.png),auto;
 }
 .imgBox ul{
     width: 400px;

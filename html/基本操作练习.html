@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>基本操作</title>
+    <script src="../js/phaser.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        
+        var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { 
+            preload: preload, 
+            create: create,
+            update: update,
+            render: render 
+        });
+
+        var conter = 0; //点击计数
+        var text;       // 计数文本
+        var sprite;
+        // 预加载
+        function preload() {
+
+            // 加在图像
+            game.load.image('star', '../assets/star.png');
+            game.load.image('star1', '../images/1.png');
+            game.load.image('star2', '../images/2.png');
+            game.load.image('star3', '../images/3.png');
+            game.load.image('star4', '../images/4.png');
+
+
+        }
+        // 创建
+        function create() {
+
+            // 在屏幕中显示头像，第一个参数为距离画布左边距离，第二个参数为距离画布顶部的距离
+            var s1 = game.add.sprite(0, 0, 'star1');
+            var s2 = game.add.sprite(170, 0, 'star2');
+            var s3 = game.add.sprite(340, 0, 'star3');
+            var s4 = game.add.sprite(510, 0, 'star4');
+            var s5 = game.add.sprite(80, 300, 'star');
+            //  在此图想上启用后所有类型的操作
+            s5.inputEnabled = true;
+            // 添加文字
+            text = game.add.text(250,400, 'sss', { fill: '#ffffff' });
+            // 绑定点击事件
+            s5.events.onInputDown.add(click, this)
+            // 开启移项器 物体移动
+           /* game.physics.enable(s5, Phaser.Physics.ARCADE);
+            s5.body.velocity.x=10*/
+            // 启动物理街机
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+
+            sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'star');
+            sprite.anchor.set(1);
+            // 启用sprite创建一个物体
+            game.physics.arcade.enable(sprite);
+        }
+
+        function update () {
+       
+            //  If the sprite is > 8px away from the pointer then let's move to it
+            if (game.physics.arcade.distanceToPointer(sprite, game.input.activePointer) > 8)
+            {
+                //  Make the object seek to the active pointer (mouse or touch).
+                game.physics.arcade.moveToPointer(sprite,300);
+            }
+            else
+            {
+                //  Otherwise turn off velocity because we're close enough to the pointer
+                sprite.body.velocity.set(0);
+            }
+
+        }
+
+        function render () {
+
+            game.debug.inputInfo(32, 32);
+
+        }
+
+        // 点击
+        function click () {
+            conter ++;
+            text.text = '你点击了' + conter + "次"
+        }
+
+    </script>
+</body>
+</html>
